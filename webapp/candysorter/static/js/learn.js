@@ -17,9 +17,33 @@ $(function () {
 	var winW = window.innerWidth;
 	var winH = window.innerHeight;
 
+	// language setting
+	var lang = window.sessionStorage.getItem("lang");
+	if (lang === null) {
+		lang = "en";
+		window.sessionStorage.setItem("lang", lang);
+	}
+
+	// switch language
+	$("body").addClass("mode-" + lang);
+	$(".cap-lang a").click(function () {
+		$("body").removeClass("mode-en mode-ja");
+		if ($(this).text() == "EN") {
+			$(this).text("JP");
+			lang = "ja";
+		} else {
+			$(this).text("EN");
+			lang = "en";
+		}
+		window.sessionStorage.setItem("lang", lang);
+		$("body").addClass("mode-" + lang);
+		return false;
+	});
+
 	// processing capture mode
 	var cap = function () {
 		$("body").addClass("mode-cap-init");
+		$(".cap-lang a").text(lang == "en" ? "EN": "JP");
 	};
 	$(".cap-start, .cap-retry").click(function () {
 		$("body").addClass("mode-loading");
@@ -69,7 +93,7 @@ $(function () {
 	});
 
 	// start learning
-  var trainStarted = false;
+	var trainStarted = false;
 	var train = function () {
 		$("body").addClass("mode-train");
 		// start request
@@ -87,7 +111,7 @@ $(function () {
 				sorry();
 			},
 			success: function (data) {
-        trainStarted = true;
+				trainStarted = true;
 			}
 		});
 		// draw package images
@@ -126,9 +150,9 @@ $(function () {
 	var compFlg = false; // status
 	var statTimer = setInterval(function () {}, 100);
 	var statPost = function () {
-    if (!trainStarted) {
-      return;
-    }
+		if (!trainStarted) {
+			return;
+		}
 		if (compFlg) {
 			clearInterval(statTimer);
 		} else {

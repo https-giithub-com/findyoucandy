@@ -8,19 +8,26 @@ $(function () {
 	var simSec = 5000; // delay time
 	var simNoWaitNum = 5;
 	var plotSec = 5000; // display time of scatter plot(milisec）
-	var camSec = 3000; // display tiem of camera image(milisec)
+	var camSec = 7000; // display tiem of camera image(milisec)
 
 	// variables
 	var recognition = new webkitSpeechRecognition();
-	var lang = "en"; // language seting
 	var speechTxt = "I like chewy chocolate candy";
 	var sim = "";
 	var winW = window.innerWidth;
 	var winH = window.innerHeight;
 
+	// language setting
+	var lang = window.sessionStorage.getItem("lang");
+	if (lang === null) {
+		lang = "en";
+		window.sessionStorage.setItem("lang", lang);
+	}
+
 	// process of voice recognition
 	var speech = function () {
 		$("body").addClass("mode-speech-start");
+		$(".speech-lang a").text(lang == "en" ? "EN": "JP");
 		recognition.lang = lang;
 		$(".speech-mic").click(function () {
 			$("body").addClass("mode-speech-in");
@@ -38,7 +45,9 @@ $(function () {
 	}
 
 	// switch language
+	$("body").addClass("mode-" + lang);
 	$(".speech-lang a").click(function () {
+		$("body").removeClass("mode-en mode-ja");
 		if ($(this).text() == "EN") {
 			$(this).text("JP");
 			lang = "ja";
@@ -46,6 +55,8 @@ $(function () {
 			$(this).text("EN");
 			lang = "en";
 		}
+		window.sessionStorage.setItem("lang", lang);
+		$("body").addClass("mode-" + lang);
 		recognition.lang = lang;
 		return false;
 	});
@@ -66,7 +77,9 @@ $(function () {
 				"lang": lang
 			}),
 			error: function (jqXHR, textStatus) {
-				if (textStatus == 'abort') { return; }
+				if (textStatus == 'abort') {
+					return;
+				}
 				console.log(jqXHR);
 				if (simXHR !== null && simXHR.readyState > 0 && simXHR.readyState < 4) {
 					simAjax.abort();
@@ -155,7 +168,9 @@ $(function () {
 				"lang": lang
 			}),
 			error: function (jqXHR, textStatus) {
-				if (textStatus == 'abort') { return; }
+				if (textStatus == 'abort') {
+					return;
+				}
 				console.log(jqXHR);
 				if (morXHR !== null && morXHR.readyState > 0 && morXHR.readyState < 4) {
 					morXHR.abort();
@@ -350,26 +365,26 @@ $(function () {
 		// draw with time difference
 		setTimeout(function () {
 			$("body").addClass("mode-cam-start");
+			// operation of pickup
+			$.ajax({
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				url: pickUrl,
+				data: JSON.stringify({
+					"id": pid
+				}),
+				error: function (textStatus) {
+					console.log(textStatus);
+				},
+				success: function (data) {
+					sim = data;
+				}
+			});
 		}, 2000);
 		setTimeout(function () {
 			thanks();
 		}, camSec);
-		// operation of pickup
-		$.ajax({
-			type: "POST",
-			contentType: "application/json",
-			dataType: "json",
-			url: pickUrl,
-			data: JSON.stringify({
-				"id": pid
-			}),
-			error: function (textStatus) {
-				console.log(textStatus);
-			},
-			success: function (data) {
-				sim = data;
-			}
-		});
 	};
 
 	// draw endroll
